@@ -6,12 +6,12 @@ Supports node >= 12
 
 ## Usage
 
-    npm install xml-encryption
+    npm install xml-encryption-enhance
 
 ### encrypt
 
 ~~~js
-var xmlenc = require('xml-encryption');
+var xmlenc = require('xml-encryption-enhance');
 
 var options = {
   rsa_pub: fs.readFileSync(__dirname + '/your_rsa.pub'),
@@ -100,4 +100,4 @@ If you have found a bug or if you have a feature request, please report them at 
 This project is licensed under the MIT license. See the [LICENSE](LICENSE) file for more info.
 
 ## Releases
-Release notes may be found under github release page: https://github.com/auth0/node-xml-encryption/releases
+Release notes may be found under github release page: https://github.com/git9527/node-xml-encryption-enhance/releases

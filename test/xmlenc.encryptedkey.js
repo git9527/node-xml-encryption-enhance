@@ -4,6 +4,7 @@ var should = require('should');
 var sinon = require('sinon');
 var xmlenc = require('../lib');
 var xpath = require('xpath');
+var escapehtml = require('escape-html');
 
 describe('encrypt', function() {
   let consoleSpy = null;
@@ -231,6 +232,40 @@ describe('encrypt', function() {
         Error,
         "Error thrown due to disallowing insecure algorithms.");
 
+      done();
+    });
+  });
+
+  it('should generate xml based on keyInfoTemplate in options ', function (done) {
+    var options = {
+      rsa_pub: fs.readFileSync(__dirname + '/test-auth0_rsa.pub'),
+      pem: fs.readFileSync(__dirname + '/test-auth0.pem'),
+      keyEncryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#rsa-1_5',
+      disallowEncryptionWithInsecureAlgorithm: false,
+      keyInfoTemplate: function ({encryptionPublicCert, encryptedKey, keyEncryptionMethod}) {
+        return `<ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+          <enc:EncryptedKey xmlns:enc="http://www.w3.org/2001/04/xmlenc#">
+            <enc:EncryptionMethod Algorithm="${escapehtml(keyEncryptionMethod)}">
+              <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+            </enc:EncryptionMethod>
+            <KeyInfo>
+              ${encryptionPublicCert}
+            </KeyInfo>
+            <enc:CipherData>
+              <enc:CipherValue>${escapehtml(encryptedKey)}</enc:CipherValue>
+            </enc:CipherData>
+          </enc:EncryptedKey>
+        </ds:KeyInfo>
+        `
+      }
+    };
+
+    var plaintext = 'The quick brown fox jumps over the lazy dog';
+
+    xmlenc.encryptKeyInfo(plaintext, options, function(err, encryptedKeyInfo) {
+      if (err) return done(err);
+      consoleSpy.called.should.equal(true);
+      assert.equal(0, encryptedKeyInfo.indexOf('<ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#'))
       done();
     });
   });
